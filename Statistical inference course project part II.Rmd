@@ -1,0 +1,50 @@
+---
+title: "Statistical inference course project part II"
+author: "Halley Wang"
+date: "October 25, 2015"
+output: pdf_document
+---
+
+This report explains how the hypothesis test (t-test in this case) shows the relationship between response variables (len) vs. predictor variables (supp and dose).
+
+```{r load package, results = "hide"}
+## Loading the necessary packages
+library(ggplot2)
+library(dplyr)
+library(datasets)
+```
+
+
+```{r summary of the dataset, cache = TRUE}
+## Summary of the data:
+summary(ToothGrowth)
+
+## make a plot of the data with respect to different supplement:
+g2 = ggplot(data = ToothGrowth, aes(x = dose, y = len, fill = supp))
+
+
+## Notice that a single predictor might correspond to many response values. In this case, we use the identity method:
+#g2 + geom_point() + facet_grid(. ~ supp)
+g2 + geom_bar(stat = "identity") + facet_grid(. ~ supp) + labs(x = "Dose (milgrams)", y = "Tooth length")
+```
+
+        As we can see from the graph, the tooth length is positively related with the dose of supplement, despite of its kind (OJ or VC).
+
+```{r linear model, cache = TRUE}
+## Plot the 2-variables linear regression model:
+lmd = lm(len ~ dose + supp, data = ToothGrowth)
+lmdSummary = summary(lmd)
+lmdSummary
+```
+
+        By assuming the true length of the teeth is linear related with the supplement and its dose, we made a linear model upon it.
+        As we can see from the summary, the intercept = `r lmdSummary$coef[1,1]` represents the teeth length at no supplement intake. the coefficient of dose = `r lmdSummary$coef[2,1]` means each 1 milgrams of supplement intake will bring up `r lmdSummary$coef[2,1]` of increament in teeth length.
+        When we are doing the hypothesis test. H0: the teeth length has no relation with the dose intake. vs. Ha: the teeth length has some relation with the dose intake. the p value = `r lmdSummary$coef[2,4]` means if the null hypothesis is true, only `r lmdSummary$coef[2,4]` of the data will be as small as this coefficient. Which means we probablily want to reject this null hypothesis.
+        Analogously for suppVC.
+
+```{r confident interval, cache = TRUE}
+c.i = confint(lmd)
+c.i
+```
+
+        At default (95%) confident interval, we say that the true intercept will fall in between `r c.i[1,1]` and `r c.i[1,2]`; the coefficient of dose will fall inbetween `r c.i[2,1]` and `r c.i[2,2]`; the intercept of suppVC will fall inbetween `r c.i[3,1]` and `r c.i[3,2]`.

@@ -1,0 +1,68 @@
+---
+title: "Statistical inference course project part I"
+author: "Halley Wang"
+date: "October 25, 2015"
+output: pdf_document
+---
+
+        This report shows the relationship between the theoritical mean and variance with the sample mean and variance. By which it illustrates the nature of central limit theorem.
+
+```{r load package, results = "hide"}
+## Loading the necessary packages
+library(ggplot2)
+library(dplyr)
+```
+
+```{r parameters, cache = TRUE}
+## Initialize the sample size, times of simulations and parameters for lambda:
+sampleSize = 40
+n = 1000
+lambda = 0.2
+
+## For controlling the random variables:
+set.seed(123)
+```
+
+```{r sampling, cache = TRUE}
+ExpDisSample = function(size = sampleSize, rate = lambda) {
+        smpl = rexp(n = size, rate = rate)
+        return (smpl)
+}
+```
+
+        This process generates a sample with 40 observations.
+
+```{r stimulation, cache = TRUE}
+## make n times of stimulation:
+ExpDisMeanStimulation = numeric()
+for (i in 1:n) {
+        ExpDisMeanStimulation = c(ExpDisMeanStimulation, mean(ExpDisSample()))
+}
+
+## Convert into a dataframe
+ExpDisStimulation = data.frame(mean = ExpDisMeanStimulation)
+head(ExpDisStimulation, 10)
+```
+
+        This process simulates 1000 replication of sample with 40 observation by repeating the process above.
+
+```{r sample mean and variance, cache = TRUE}
+## Calculate the sample mean and sample variance:
+sampleMean = mean(ExpDisStimulation$mean)
+sampleVariance = var(ExpDisStimulation$mean)
+```
+
+        We know that the random variable has mean lambda^-1 = `r lambda^-1`, while the sample variance is lambda^-2 = `r lambda^-2`. Due to the Central limit Theorem, we know that the sample should has same mean `r lambda^-1`, variance `r lambda^-2`/sqrt(`r sampleSize`) = `r lambda^-2/sampleSize`.
+        In comparison, the sample mean is `r sampleMean`, the sample variance is `r sampleVariance`.
+
+
+```{r histogram, cache = TRUE}
+## Create ggplot object:
+g1 = ggplot(data = ExpDisStimulation, aes(x = mean))
+
+## Filling colors and 
+g1 + geom_histogram(binwidth = 0.1, aes(fill = ..count..)) + geom_vline(x = c(lambda^-1, mean(ExpDisStimulation$mean)), color = c("GREEN", "RED"))
+```
+
+        As we can see from the graph, the sample mean distribution is roughly Gaussian, which agrees on the central limit theorem.
+        The Green line represents the theoritical mean, while the red represents the sample mean. As we can see, they are converging to each other.
